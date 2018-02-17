@@ -1,7 +1,5 @@
 #Randolph Wilson /Avery Snyder
 #Python 3.6, UDP Hangman Client
-#Notice: due to a socket limitation in windows with the binding and releasing of a socket
-#in quick succession this code should be used on a linux like os.
 import socket
 UDP_port = 12313
 userGuess = []
