@@ -1,4 +1,9 @@
 import socket
+UDP_IP = None
+UDP_Port = 12313
+guessWord = None
+
+userGuesses = [None]
 
 def getIP():
     IPs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -7,46 +12,61 @@ def getIP():
     return IPs.getsockname()[0]
 
 def client():
-    UDP_IP = input("Please enter target IP: ") #try using whitePi @ 10.0.1.20
-    UDP_Port = 12313
-    Message = "All your Base you wanker"
+    ClientUDP_IP = input("Please enter target IP: ") #try using whitePi @ 10.0.1.20
+    ClientUDP_Port = 12313
 
-    print("UDP target ip:", UDP_IP)
-    print("UDP target port:", UDP_Port)
-    #print("Message:", Message)
+    print("UDP target ip:", ClientUDP_IP)
+    print("UDP target port:", ClientUDP_Port)
+
+
+def sendMsg(_msg):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(Message.encode(), (UDP_IP, UDP_Port))
-    return Message
+    sock.sendto(_msg.encode()), (UDP_IP, UDP_Port)
 
-
-def host(): #here for the purposes of debugging my own code and only having to deploy one file to my raspis
-    UDP_IP = getIP()
+def listen(): #here for the purposes of debugging my own code and only having to deploy one file to my raspis
+    Listening_IP = getIP()
     UDP_port = 12313
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((UDP_IP, UDP_port))
-    while True:
+    sock.bind((Listening_IP, UDP_port))
+    x = True
+    while x:
         data, addr = sock.recvfrom(1024)
-        print("Received message:", data)
-        print("Client IP address:", addr[0])
+        UDP_IP = addr
+        # print("Received message:", data)
+        # print("Client IP address:", addr[0])
+        if data is not None:
+            guessWord = data
+            x = False
+
+
 
 def gameDebug():
     x = True
 
     while x:
-        Choice = input("Are you (1)hosting or (2)playing hangman?, enter (0) to quit")
-        if Choice == 1: #server
-            pass
-        if Choice == 2:
-            msg = client()
-            while str(msg).lower() != ('you win' and 'you lose'):
-                print("Word is ", msg[0], " characters long")
-                print(msg[1:len(msg)])
-                guess = input('Please guess a letter').lower()
+        if x:
+            Choice = input("Are you (1)hosting or (2)playing hangman?, enter (0) to quit: ")
+            if Choice == '1': #server
+                print("Welcome host")
+                h = "Hamster"
+                client()
+                sendMsg(h)
 
-        if Choice == 0:
-            break
+            elif Choice == '2':
+                listen()
+                print("Word is ", guessWord[0], " letters long")
+                print(guessWord[1:len(guessWord)])
+                while str(guessWord).lower() != ('you win' and 'you lose'):
+                    guess = input('Please guess a letter').lower()
+                    sendMsg(guess[0])
+                    listen()
+                    userGuesses.append(guess[0].lower())
+                    print("Your past guesses are ", userGuesses)
+
+            elif Choice == '0':
+                x = False
 
 
 #client()
-getIP()
+gameDebug()
